@@ -7,6 +7,7 @@ langchain-core
 langchain-google-community
 langchain-google-vertexai
 langchain-community
+langchain-google-community[docai]
 streamlit
 ipython
 rich
