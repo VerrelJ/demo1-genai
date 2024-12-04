@@ -13,5 +13,3 @@ rich
 markdown
 google-api-core
 google-cloud-aiplatform
-uuid
-hashlib

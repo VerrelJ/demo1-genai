@@ -4,7 +4,6 @@ from google.cloud import firestore
 import vertexai
 from vertexai.language_models import ChatModel, InputOutputTextPair, GroundingSource, ChatMessage, ChatSession
 import json
-from hashlib import md5
 
 from google.cloud import documentai
 from google.cloud import discoveryengine
@@ -29,8 +28,6 @@ from langchain_community.document_loaders.gcs_file import GCSFileLoader
 from langchain_community.utilities.vertexai import get_client_info
 import re
 
-import hashlib
-import uuid
 
 from google.cloud import storage
 from google.cloud import aiplatform
@@ -600,9 +597,6 @@ class CustomGCSDirectoryLoader(GCSDirectoryLoader, BaseLoader):
                     raise e
         return docs
     
-def create_uuid(name: str) -> str:
-    hex_string = hashlib.md5(name.encode("UTF-8")).hexdigest()
-    return str(uuid.UUID(hex=hex_string))
 
 def get_batches(items: List, n: int = 1000) -> List[List]:
     n = max(1, n)
