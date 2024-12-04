@@ -1,0 +1,17 @@
+google-cloud-discoveryengine
+google-cloud-storage
+google-cloud-firestore
+google-cloud-documentai
+vertexai
+langchain-core
+langchain-google-community
+langchain-google-vertexai
+langchain-community
+streamlit
+ipython
+rich
+markdown
+google-api-core
+google-cloud-aiplatform
+uuid
+hashlib
