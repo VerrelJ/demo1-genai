@@ -4,7 +4,6 @@ import time
 import redis
 import json
 
-cache_flag = False
 redis_client = redis.Redis(
     host='10.114.204.147',
     port=6379,
@@ -30,8 +29,9 @@ def format_chunks_to_json(chunks):
         st.write("Document structure:", doc)
         chunk_data = {
             "source_number": idx,
-            "content": doc.page_content,
-            "filename": doc.metadata.get("source").split('/')[-1]
+            "content": doc["chunk_text"],
+            # "filename": doc.metadata.get("source").split('/')[-1]
+            "file_name" :  doc["source"].metadata["source"].split('/')[-1]
         }
         formatted_chunks.append(chunk_data)
     return formatted_chunks
@@ -268,7 +268,6 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
         cached_response = get_cached_response(prompt)
         st.write("cached response : ", cached_response)
         if cached_response:
-            cache_flag = True
             response_data = json.loads(cached_response)
             st.session_state.messages.append({"role": "assistant", "content": response_data['answer_with_citations']})
             st.chat_message("assistant").write(response_data['answer_with_citations'])
@@ -277,7 +276,6 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
             with st.expander("View Source Chunks"):
                 st.json(response_data['cited_chunks'])
         else:
-            cache_flag = False
             with st.spinner('Preparing'):
                 response = mts.qa_with_check_grounding.invoke({
                             "query": prompt,
