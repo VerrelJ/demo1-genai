@@ -24,12 +24,28 @@ def get_cached_response(prompt):
     """Get cached response for a prompt"""
     return redis_client.get(f"chat:prompt:{prompt}")
 
+def document_to_dict(doc):
+    """Convert Document object to serializable dictionary"""
+    if hasattr(doc['source'], 'metadata'):
+        return {
+            'chunk_text': doc['chunk_text'],
+            'source': {
+                'metadata': doc['source'].metadata
+            }
+        }
+    return doc
+
 def cache_response(prompt, response):
-    """Cache the response for a prompt"""
+    """Cache the response with serializable data"""
+    serializable_response = {
+        'answer_with_citations': response['answer_with_citations'],
+        'cited_chunks': [document_to_dict(doc) for doc in response['cited_chunks']]
+    }
+    
     redis_client.setex(
         f"chat:prompt:{prompt}",
         CACHE_TTL,
-        json.dumps(response)
+        json.dumps(serializable_response)
     )
 
 docs = None
