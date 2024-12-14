@@ -62,7 +62,7 @@ def cache_response(prompt, response):
     redis_client.setex(
         f"chat:prompt:{prompt}",
         CACHE_TTL,
-        json.dumps(serializable_response)
+        json.dumps(serializable_response, cls=DocumentEncoder)
     )
 
 docs = None
