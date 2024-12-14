@@ -29,8 +29,8 @@ def format_chunks_to_json(chunks):
     for idx, doc in enumerate(chunks):
         chunk_data = {
             "source_number": idx,
-            "content": doc["chunk_text"] if isinstance(doc, dict) else doc.page_content,
-            "filename": doc["source"]["source"].split('/')[-1] if isinstance(doc, dict) else doc.metadata["source"].split('/')[-1]
+            "content": doc.page_content,
+            "filename": doc.metadata["source"].split('/')[-1]
         }
         formatted_chunks.append(chunk_data)
     return formatted_chunks
