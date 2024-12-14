@@ -33,6 +33,13 @@ def get_cached_response(prompt):
     """Get cached response for a prompt"""
     return redis_client.get(f"chat:prompt:{prompt}")
 
+def get_source_path(doc):
+    """Extract source path from document structure"""
+    if isinstance(doc, dict):
+        return doc["source"]["source"]
+    # Handle Document object
+    return doc.metadata["source"]
+
 def document_to_dict(doc):
     """Convert Document object to serializable dictionary"""
     return {
@@ -43,15 +50,6 @@ def document_to_dict(doc):
     }
 
 
-# def get_source_path(doc):
-#     """Extract source path from document structure"""
-#     if isinstance(doc['source'], str):
-#         return doc['source']
-#     # Handle Document object structure
-#     if 'metadata' in doc['source']:
-#         return doc['source']['metadata']['source']
-#     # Handle cached dictionary structure    
-#     return doc['source']['source']
 
 def cache_response(prompt, response):
     """Cache the response with serializable data"""
@@ -296,7 +294,7 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
                         st.markdown("**Content:**")
                         st.markdown(doc["chunk_text"])
                         st.markdown("**Source:**")
-                        source_path = doc["source"]["source"]
+                        source_path = get_source_path(doc)
                         filename = source_path.split('/')[-1]
                         st.markdown(f"File: {filename}")
         else:
@@ -326,7 +324,7 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
                             
                             # Display source information
                             st.markdown("**Source:**")
-                            source_path = doc["source"]["source"]
+                            source_path = get_source_path(doc)
                             filename = source_path.split('/')[-1]
                             st.markdown(f"File: {filename}")
 else:
