@@ -321,7 +321,10 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
                             
                             # Display source information
                             st.markdown("**Source:**")
-                            filename = doc.metadata["source"].split('/')[-1]
+                            if isinstance(doc, dict):
+                                filename = doc["source"].split('/')[-1]
+                            else:
+                                filename = doc.metadata["source"].split('/')[-1]
                             st.markdown(f"File: {filename}")
 else:
     st.header("Knowledge Management for GenAI ✨")
