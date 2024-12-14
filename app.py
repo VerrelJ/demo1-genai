@@ -27,10 +27,17 @@ def get_cached_response(prompt):
 def format_chunks_to_json(chunks):
     formatted_chunks = []
     for idx, doc in enumerate(chunks):
+        if isinstance(doc, dict):
+            content = doc["chunk_text"]
+            filename = doc["source"]["source"].split('/')[-1]
+        else:
+            content = doc.page_content
+            filename = doc.metadata["source"].split('/')[-1]
+            
         chunk_data = {
             "source_number": idx,
-            "content": doc.page_content,
-            "filename": doc.metadata["source"].split('/')[-1]
+            "content": content,
+            "filename": filename
         }
         formatted_chunks.append(chunk_data)
     return formatted_chunks
