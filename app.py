@@ -26,7 +26,6 @@ def get_cached_response(prompt):
 def format_chunks_to_json(chunks):
     formatted_chunks = []
     for idx, doc in enumerate(chunks):
-        st.write("Document structure:", doc)
         chunk_data = {
             "source_number": idx,
             "content": doc["chunk_text"],
@@ -266,7 +265,6 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.chat_message("user").write(prompt)
         cached_response = get_cached_response(prompt)
-        st.write("cached response : ", cached_response)
         if cached_response:
             response_data = json.loads(cached_response)
             st.session_state.messages.append({"role": "assistant", "content": response_data['answer_with_citations']})
