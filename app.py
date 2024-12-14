@@ -37,15 +37,16 @@ def get_source_path(doc):
     """Extract source path from document structure"""
     if isinstance(doc, dict):
         return doc["source"]["source"]
-    # Handle Document object
     return doc.metadata["source"]
 
 def document_to_dict(doc):
     """Convert Document object to serializable dictionary"""
+    if isinstance(doc, dict):
+        return doc
     return {
-        'chunk_text': doc['chunk_text'],
+        'chunk_text': doc.page_content,
         'source': {
-            'source': doc['source'].metadata['source'] if hasattr(doc['source'], 'metadata') else doc['source']
+            'source': doc.metadata['source']
         }
     }
 
@@ -61,7 +62,7 @@ def cache_response(prompt, response):
     redis_client.setex(
         f"chat:prompt:{prompt}",
         CACHE_TTL,
-        json.dumps(serializable_response, cls=DocumentEncoder)
+        json.dumps(serializable_response)
     )
 
 docs = None
