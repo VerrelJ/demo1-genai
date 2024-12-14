@@ -27,7 +27,7 @@ def get_cached_response(prompt):
 def format_chunks_to_json(chunks):
     formatted_chunks = []
     for idx, doc in enumerate(chunks):
-        print(doc)
+        st.write("Document structure:", doc)
         chunk_data = {
             "source_number": idx,
             "content": doc["chunk_text"] if isinstance(doc, dict) else doc.page_content,
