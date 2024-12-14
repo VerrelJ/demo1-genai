@@ -52,11 +52,11 @@ def document_to_dict(doc):
 
 
 
-def cache_response(prompt, response_obj):
+def cache_response(prompt, response):
     """Cache the response with serializable data"""
     serializable_response = {
-        'answer_with_citations': response['answer_with_citations'],
-        'cited_chunks': [document_to_dict(doc) for doc in response_obj['cited_chunks']]
+        'answer_with_citations': response.answer_with_citations,
+        'cited_chunks': [document_to_dict(doc) for doc in response.cited_chunks]
     }
     
     redis_client.setex(
@@ -306,10 +306,7 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
                             "output_parser": output_parser,
                             "docs": docs
                         })
-                cache_response(prompt, {
-                    'answer_with_citations': response.answer_with_citations,
-                    'cited_chunks': response.cited_chunks
-                })
+                cache_response(prompt, response)
                 st.session_state.messages.append({"role": "assistant", "content": response.answer_with_citations})
                 st.chat_message("assistant").write(response.answer_with_citations)
                 with st.expander("View Source Chunks"):
@@ -320,12 +317,11 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
                             
                             # Display chunk text
                             st.markdown("**Content:**")
-                            st.markdown(doc["chunk_text"])
+                            st.markdown(doc.page_content)
                             
                             # Display source information
                             st.markdown("**Source:**")
-                            source_path = get_source_path(doc)
-                            filename = source_path.split('/')[-1]
+                            filename = doc.metadata["source"].split('/')[-1]
                             st.markdown(f"File: {filename}")
 else:
     st.header("Knowledge Management for GenAI ✨")
