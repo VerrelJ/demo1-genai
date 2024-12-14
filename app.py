@@ -36,7 +36,7 @@ def get_cached_response(prompt):
 def get_source_path(doc):
     """Extract source path from document structure"""
     if isinstance(doc, dict):
-        return doc["source"]["source"]
+        return doc["source"]
     return doc.metadata["source"]
 
 def document_to_dict(doc):
@@ -52,11 +52,11 @@ def document_to_dict(doc):
 
 
 
-def cache_response(prompt, response):
+def cache_response(prompt, response_obj):
     """Cache the response with serializable data"""
     serializable_response = {
         'answer_with_citations': response['answer_with_citations'],
-        'cited_chunks': [document_to_dict(doc) for doc in response['cited_chunks']]
+        'cited_chunks': [document_to_dict(doc) for doc in response_obj['cited_chunks']]
     }
     
     redis_client.setex(
@@ -289,14 +289,13 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
             
             # Show source chunks for cached response
             with st.expander("View Source Chunks"):
-                for idx, doc in enumerate(response_data.get('cited_chunks', [])):
+                for idx, doc in enumerate(response_data['cited_chunks']):
                     with st.container(border=True):
                         st.markdown(f"**Source #{idx}**")
                         st.markdown("**Content:**")
                         st.markdown(doc["chunk_text"])
                         st.markdown("**Source:**")
-                        source_path = get_source_path(doc)
-                        filename = source_path.split('/')[-1]
+                        filename = doc["source"].split('/')[-1]
                         st.markdown(f"File: {filename}")
         else:
             with st.spinner('Preparing'):
