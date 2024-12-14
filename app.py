@@ -5,6 +5,15 @@ import redis
 import json
 
 
+class DocumentEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, 'metadata'):
+            return {
+                'metadata': obj.metadata,
+                'page_content': obj.page_content
+            }
+        return super().default(obj)
+    
 redis_client = redis.Redis(
     host='10.114.204.147',
     port=6379,
@@ -26,25 +35,23 @@ def get_cached_response(prompt):
 
 def document_to_dict(doc):
     """Convert Document object to serializable dictionary"""
-    if hasattr(doc['source'], 'metadata'):
-        return {
-            'chunk_text': doc['chunk_text'],
-            'source': {
-                'source': doc['source']
-            }
+    return {
+        'chunk_text': doc['chunk_text'],
+        'source': {
+            'source': doc['source'].metadata['source'] if hasattr(doc['source'], 'metadata') else doc['source']
         }
-    return doc
+    }
 
 
-def get_source_path(doc):
-    """Extract source path from document structure"""
-    if isinstance(doc['source'], str):
-        return doc['source']
-    # Handle Document object structure
-    if 'metadata' in doc['source']:
-        return doc['source']['metadata']['source']
-    # Handle cached dictionary structure    
-    return doc['source']['source']
+# def get_source_path(doc):
+#     """Extract source path from document structure"""
+#     if isinstance(doc['source'], str):
+#         return doc['source']
+#     # Handle Document object structure
+#     if 'metadata' in doc['source']:
+#         return doc['source']['metadata']['source']
+#     # Handle cached dictionary structure    
+#     return doc['source']['source']
 
 def cache_response(prompt, response):
     """Cache the response with serializable data"""
@@ -56,7 +63,7 @@ def cache_response(prompt, response):
     redis_client.setex(
         f"chat:prompt:{prompt}",
         CACHE_TTL,
-        json.dumps(serializable_response)
+        json.dumps(serializable_response, cls=DocumentEncoder)
     )
 
 docs = None
@@ -289,7 +296,7 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
                         st.markdown("**Content:**")
                         st.markdown(doc["chunk_text"])
                         st.markdown("**Source:**")
-                        source_path = get_source_path(doc)
+                        source_path = doc["source"]["source"]
                         filename = source_path.split('/')[-1]
                         st.markdown(f"File: {filename}")
         else:
