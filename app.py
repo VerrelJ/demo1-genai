@@ -317,7 +317,7 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
                             
                             # Display chunk text
                             st.markdown("**Content:**")
-                            st.markdown(doc.page_content)
+                            st.markdown(doc["chunk_text"])
                             
                             # Display source information
                             st.markdown("**Source:**")
