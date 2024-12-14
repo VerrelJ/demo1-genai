@@ -4,15 +4,6 @@ import time
 import redis
 import json
 
-
-class DocumentEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, 'metadata'):
-            return {
-                'metadata': obj.metadata,
-                'page_content': obj.page_content
-            }
-        return super().default(obj)
     
 redis_client = redis.Redis(
     host='10.114.204.147',
@@ -33,36 +24,28 @@ def get_cached_response(prompt):
     """Get cached response for a prompt"""
     return redis_client.get(f"chat:prompt:{prompt}")
 
-def get_source_path(doc):
-    """Extract source path from document structure"""
-    if isinstance(doc, dict):
-        return doc["source"]
-    return doc.metadata["source"]
-
-def document_to_dict(doc):
-    """Convert Document object to serializable dictionary"""
-    if isinstance(doc, dict):
-        return doc
-    return {
-        'chunk_text': doc.page_content,
-        'source': {
-            'source': doc.metadata['source']
+def format_chunks_to_json(chunks):
+    formatted_chunks = []
+    for idx, doc in enumerate(chunks):
+        chunk_data = {
+            "source_number": idx,
+            "content": doc["chunk_text"] if isinstance(doc, dict) else doc.page_content,
+            "filename": doc["source"]["source"].split('/')[-1] if isinstance(doc, dict) else doc.metadata["source"].split('/')[-1]
         }
-    }
-
-
+        formatted_chunks.append(chunk_data)
+    return formatted_chunks
 
 def cache_response(prompt, response):
-    """Cache the response with serializable data"""
+    """Cache the response with JSON formatted chunks"""
     serializable_response = {
         'answer_with_citations': response.answer_with_citations,
-        'cited_chunks': [document_to_dict(doc) for doc in response.cited_chunks]
+        'cited_chunks': format_chunks_to_json(response.cited_chunks)
     }
     
     redis_client.setex(
         f"chat:prompt:{prompt}",
         CACHE_TTL,
-        json.dumps(serializable_response, cls=DocumentEncoder)
+        json.dumps(serializable_response)
     )
 
 docs = None
@@ -289,14 +272,7 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
             
             # Show source chunks for cached response
             with st.expander("View Source Chunks"):
-                for idx, doc in enumerate(response_data['cited_chunks']):
-                    with st.container(border=True):
-                        st.markdown(f"**Source #{idx}**")
-                        st.markdown("**Content:**")
-                        st.markdown(doc["chunk_text"])
-                        st.markdown("**Source:**")
-                        filename = doc["source"].split('/')[-1]
-                        st.markdown(f"File: {filename}")
+                st.json(response_data['cited_chunks'])
         else:
             with st.spinner('Preparing'):
                 response = mts.qa_with_check_grounding.invoke({
@@ -311,21 +287,8 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
                 st.chat_message("assistant").write(response.answer_with_citations)
                 with st.expander("View Source Chunks"):
                     for idx, doc in enumerate(response.cited_chunks):
-                        with st.container(border=True):
-                            # Display chunk number
-                            st.markdown(f"**Source #{idx}**")
-                            
-                            # Display chunk text
-                            st.markdown("**Content:**")
-                            st.markdown(doc["chunk_text"])
-                            
-                            # Display source information
-                            st.markdown("**Source:**")
-                            if isinstance(doc, dict):
-                                filename = doc["source"]["source"].split('/')[-1]
-                            else:
-                                filename = doc.metadata["source"].split('/')[-1]
-                            st.markdown(f"File: {filename}")
+                        chunks_json = format_chunks_to_json(response.cited_chunks)
+                        st.json(chunks_json)
 else:
     st.header("Knowledge Management for GenAI ✨")
     st.divider()
