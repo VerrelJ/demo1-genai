@@ -27,19 +27,12 @@ def get_cached_response(prompt):
 def format_chunks_to_json(chunks):
     formatted_chunks = []
     for idx, doc in enumerate(chunks):
-        if hasattr(doc, 'page_content'):
-            chunk_data = {
-                "source_number": idx,
-                "content": doc.page_content,
-                "filename": doc.metadata["source"].split('/')[-1]
-            }
-        # For dictionary objects
-        else:
-            chunk_data = {
-                "source_number": idx,
-                "content": doc["chunk_text"],
-                "filename": doc["source"]["source"].split('/')[-1]
-            }
+        print(doc)
+        chunk_data = {
+            "source_number": idx,
+            "content": doc["chunk_text"] if isinstance(doc, dict) else doc.page_content,
+            "filename": doc["source"]["source"].split('/')[-1] if isinstance(doc, dict) else doc.metadata["source"].split('/')[-1]
+        }
         formatted_chunks.append(chunk_data)
     return formatted_chunks
 
@@ -294,9 +287,8 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
                 st.session_state.messages.append({"role": "assistant", "content": response.answer_with_citations})
                 st.chat_message("assistant").write(response.answer_with_citations)
                 with st.expander("View Source Chunks"):
-                    for idx, doc in enumerate(response.cited_chunks):
-                        chunks_json = format_chunks_to_json(response.cited_chunks)
-                        st.json(chunks_json)
+                    chunks_json = format_chunks_to_json(response.cited_chunks)
+                    st.json(chunks_json)
 else:
     st.header("Knowledge Management for GenAI ✨")
     st.divider()
