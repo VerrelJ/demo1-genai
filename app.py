@@ -1,6 +1,36 @@
 import streamlit as st
 import functions as mts
 import time
+import redis
+import json
+
+
+redis_client = redis.Redis(
+    host='10.114.204.147',
+    port=6379,
+    socket_timeout=5,
+    socket_connect_timeout=5,
+    socket_keepalive=True,
+    retry_on_timeout=True,
+    max_connections=10,
+    ssl=False,
+    db=0,
+    decode_responses=True
+)
+
+CACHE_TTL = 3600
+
+def get_cached_response(prompt):
+    """Get cached response for a prompt"""
+    return redis_client.get(f"chat:prompt:{prompt}")
+
+def cache_response(prompt, response):
+    """Cache the response for a prompt"""
+    redis_client.setex(
+        f"chat:prompt:{prompt}",
+        CACHE_TTL,
+        json.dumps(response)
+    )
 
 docs = None
 
@@ -214,21 +244,57 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
     # Display existing chat messages
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
-
+        
     if prompt := st.chat_input():
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.chat_message("user").write(prompt)
-        with st.spinner('Preparing'):
-            response = mts.qa_with_check_grounding.invoke({
-                        "query": prompt,
-                        "create_answer": create_answer,
-                        "retriever": retriever,
-                        "output_parser": output_parser,
-                        "docs": docs
-                    })
-        st.session_state.messages.append({"role": "assistant", "content": response.answer_with_citations})
-        st.chat_message("assistant").write(response.answer_with_citations)
-
+        cached_response = get_cached_response(prompt)
+        if cached_response:
+            response_data = json.loads(cached_response)
+            st.session_state.messages.append({"role": "assistant", "content": response_data['answer_with_citations']})
+            st.chat_message("assistant").write(response_data['answer_with_citations'])
+            
+            # Show source chunks for cached response
+            with st.expander("View Source Chunks"):
+                for idx, doc in enumerate(response_data.get('cited_chunks', [])):
+                    with st.container(border=True):
+                        st.markdown(f"**Source #{idx}**")
+                        st.markdown("**Content:**")
+                        st.markdown(doc["chunk_text"])
+                        st.markdown("**Source:**")
+                        source_path = doc["source"].metadata["source"]
+                        filename = source_path.split('/')[-1]
+                        st.markdown(f"File: {filename}")
+        else:
+            with st.spinner('Preparing'):
+                response = mts.qa_with_check_grounding.invoke({
+                            "query": prompt,
+                            "create_answer": create_answer,
+                            "retriever": retriever,
+                            "output_parser": output_parser,
+                            "docs": docs
+                        })
+                cache_response(prompt, {
+                    'answer_with_citations': response.answer_with_citations,
+                    'cited_chunks': response.cited_chunks
+                })
+                st.session_state.messages.append({"role": "assistant", "content": response.answer_with_citations})
+                st.chat_message("assistant").write(response.answer_with_citations)
+                with st.expander("View Source Chunks"):
+                    for idx, doc in enumerate(response.cited_chunks):
+                        with st.container(border=True):
+                            # Display chunk number
+                            st.markdown(f"**Source #{idx}**")
+                            
+                            # Display chunk text
+                            st.markdown("**Content:**")
+                            st.markdown(doc["chunk_text"])
+                            
+                            # Display source information
+                            st.markdown("**Source:**")
+                            source_path = doc["source"].metadata["source"]
+                            filename = source_path.split('/')[-1]
+                            st.markdown(f"File: {filename}")
 else:
     st.header("Knowledge Management for GenAI ✨")
     st.divider()
