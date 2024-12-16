@@ -262,6 +262,7 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
         st.chat_message(msg["role"]).write(msg["content"])
         
     if prompt := st.chat_input():
+        start_time = time.time()
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.chat_message("user").write(prompt)
         cached_response = get_cached_response(prompt)
@@ -270,6 +271,10 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
             st.session_state.messages.append({"role": "assistant", "content": response_data['answer_with_citations']})
             st.chat_message("assistant").write(response_data['answer_with_citations'])
             
+            end_time = time.time()
+            response_time = round(end_time - start_time, 2)
+            st.caption(f"Response time: {response_time} seconds")
+
             # Show source chunks for cached response
             with st.expander("View Source Chunks"):
                 st.json(response_data['cited_chunks'])
@@ -285,6 +290,11 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
                 cache_response(prompt, response)
                 st.session_state.messages.append({"role": "assistant", "content": response.answer_with_citations})
                 st.chat_message("assistant").write(response.answer_with_citations)
+
+                end_time = time.time()
+                response_time = round(end_time - start_time, 2)
+                st.caption(f"Response time: {response_time} seconds")
+                
                 with st.expander("View Source Chunks"):
                     chunks_json = format_chunks_to_json(response.cited_chunks)
                     st.json(chunks_json)
