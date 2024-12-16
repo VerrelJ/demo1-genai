@@ -768,7 +768,7 @@ def retriever(vector_store):
 
 
 def create_answer():
-    llm = VertexAI(model_name="gemini-1.5-pro-001", max_output_tokens=1024)
+    llm = VertexAI(model_name=LLM_MODEL_NAME, max_output_tokens=1024)
     template = """
     Anda adalah Asisten Virtual AI yang didedikasikan untuk memberikan informasi berdasarkan context document yang diberikan.
  
