@@ -86,7 +86,7 @@ VS_MIN_REPLICAS = 1
 VS_MAX_REPLICAS = 1
 VS_DESCRIPTION = "Index for DIY RAG with Vertex AI APIs"  # @param {type:"string"}
 EMBEDDINGS_MODEL_NAME = "textembedding-gecko-multilingual"
-LLM_MODEL_NAME = "gemini-1.5-pro"
+LLM_MODEL_NAME = "gemini-1.5-flash"
 DOCAI_LOCATION = "us"  # @param ["us", "eu"]
 DOCAI_PROCESSOR_NAME = "projects/688888656210/locations/us/processors/19a4d4f04e1be9fa"
 CREATE_RESOURCES = False  # @param {type:"boolean"}
@@ -780,7 +780,7 @@ def create_answer():
     - Pada proses analisa, pastikan analisa dilakukan dengan context dan grounding yang diberikan serta penalaranmu dalam menyelesaikan masalah tersebut
     
     Bahasa:
-    - Bahasa yang digunakan adalah bahasa indonesia, jika context dan grounding yang diberikan dalam bahasa inggris, maka tetap jawab dengan bahasa indonesia
+    - Bahasa yang digunakan adalah bahasa indonesia dan bahasa inggris, jika context dan grounding yang diberikan dalam bahasa inggris, maka jawab dengan bahasa inggris dan jika context dan grounding yang diberikan dalam bahasa indonesia, maka jawab dengan bahasa indonesia
     - Jawaban menggunakan bahasa yang formal dan profesional.
     - Jangan menggunakan bahasa gaul dari bahasa apa pun dan kata slang dari bahasa apa pun.
     - Jika terdapat atau menggunakan istilah selain dari bahasa indonesia, berikan arti dan penjelasan singkat
