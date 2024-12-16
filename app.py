@@ -265,39 +265,39 @@ if st.session_state["authenticated"] and st.session_state["username"] != None:
         start_time = time.time()
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.chat_message("user").write(prompt)
-        # cached_response = get_cached_response(prompt)
-        # if cached_response:
-        #     response_data = json.loads(cached_response)
-        #     st.session_state.messages.append({"role": "assistant", "content": response_data['answer_with_citations']})
-        #     st.chat_message("assistant").write(response_data['answer_with_citations'])
+        cached_response = get_cached_response(prompt)
+        if cached_response:
+            response_data = json.loads(cached_response)
+            st.session_state.messages.append({"role": "assistant", "content": response_data['answer_with_citations']})
+            st.chat_message("assistant").write(response_data['answer_with_citations'])
             
-        #     end_time = time.time()
-        #     response_time = round(end_time - start_time, 2)
-        #     st.caption(f"Response time: {response_time} seconds")
-
-        #     # Show source chunks for cached response
-        #     with st.expander("View Source Chunks"):
-        #         st.json(response_data['cited_chunks'])
-        # else:
-        with st.spinner('Preparing'):
-            response = mts.qa_with_check_grounding.invoke({
-                        "query": prompt,
-                        "create_answer": create_answer,
-                        "retriever": retriever,
-                        "output_parser": output_parser,
-                        "docs": docs
-                    })
-            # cache_response(prompt, response)
-            st.session_state.messages.append({"role": "assistant", "content": response.answer_with_citations})
-            st.chat_message("assistant").write(response.answer_with_citations)
-
             end_time = time.time()
             response_time = round(end_time - start_time, 2)
             st.caption(f"Response time: {response_time} seconds")
 
+            # Show source chunks for cached response
             with st.expander("View Source Chunks"):
-                chunks_json = format_chunks_to_json(response.cited_chunks)
-                st.json(chunks_json)
+                st.json(response_data['cited_chunks'])
+        else:
+            with st.spinner('Preparing'):
+                response = mts.qa_with_check_grounding.invoke({
+                            "query": prompt,
+                            "create_answer": create_answer,
+                            "retriever": retriever,
+                            "output_parser": output_parser,
+                            "docs": docs
+                        })
+                cache_response(prompt, response)
+                st.session_state.messages.append({"role": "assistant", "content": response.answer_with_citations})
+                st.chat_message("assistant").write(response.answer_with_citations)
+
+                end_time = time.time()
+                response_time = round(end_time - start_time, 2)
+                st.caption(f"Response time: {response_time} seconds")
+                
+                with st.expander("View Source Chunks"):
+                    chunks_json = format_chunks_to_json(response.cited_chunks)
+                    st.json(chunks_json)
 else:
     st.header("Knowledge Management for GenAI ✨")
     st.divider()
