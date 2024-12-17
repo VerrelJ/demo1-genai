@@ -780,10 +780,11 @@ def create_answer():
     - Pada proses analisa, pastikan analisa dilakukan dengan context dan grounding yang diberikan serta penalaranmu dalam menyelesaikan masalah tersebut
     
     Bahasa:
-    - Bahasa yang digunakan adalah bahasa indonesia dan bahasa inggris, jika context dan grounding yang diberikan dalam bahasa inggris, maka jawab dengan bahasa inggris dan jika context dan grounding yang diberikan dalam bahasa indonesia, maka jawab dengan bahasa indonesia
+    - Bahasa yang digunakan adalah bahasa indonesia dan bahasa inggris.
+    - jika context dan grounding yang diberikan dalam bahasa inggris, maka jawab dengan bahasa inggris.
+    - jika context dan grounding yang diberikan dalam bahasa indonesia, maka jawab dengan bahasa indonesia.
     - Jawaban menggunakan bahasa yang formal dan profesional.
     - Jangan menggunakan bahasa gaul dari bahasa apa pun dan kata slang dari bahasa apa pun.
-    - Jika terdapat atau menggunakan istilah selain dari bahasa indonesia, berikan arti dan penjelasan singkat
     
     Basis Pengetahuan:
     - Jawablah pertanyaan hanya dengan basis pengetahuan yang kamu diberikan pada context dan grounding, serta informasi pada percakapan chat sebelumnya
