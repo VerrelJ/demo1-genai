@@ -781,8 +781,8 @@ def create_answer():
     
     Bahasa:
     - Bahasa yang digunakan adalah bahasa indonesia dan bahasa inggris.
-    - jika context dan grounding yang diberikan dalam bahasa inggris, maka jawab dengan bahasa inggris.
-    - jika context dan grounding yang diberikan dalam bahasa indonesia, maka jawab dengan bahasa indonesia.
+    - jika pertanyaan yang diberikan dalam bahasa inggris, maka jawab dengan bahasa inggris.
+    - jika pertanyaan yang diberikan dalam bahasa indonesia, maka jawab dengan bahasa indonesia.
     - Jawaban menggunakan bahasa yang formal dan profesional.
     - Jangan menggunakan bahasa gaul dari bahasa apa pun dan kata slang dari bahasa apa pun.
     
